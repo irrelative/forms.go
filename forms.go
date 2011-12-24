@@ -27,11 +27,12 @@ func (inp *Textbox) Validate(r *http.Request) (bool) {
 }
 
 func (inp *Textbox) Render() (string) {
-	return fmt.Sprintf(`<input type="text" name="%s"/>`, inp.Name)
+	return fmt.Sprintf(`<input type="text" name="%s" id="id_%s"/>`,
+		inp.Name, inp.Name)
 }
 
 func (inp *Textbox) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 // Password Input
@@ -52,7 +53,7 @@ func (inp *Password) Render() (string) {
 }
 
 func (inp *Password) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 
@@ -70,11 +71,11 @@ func (inp *Textarea) Validate(r *http.Request) (bool) {
 }
 
 func (inp *Textarea) Render() (string) {
-	return fmt.Sprintf(`<textarea name="%s"></textarea>`, inp.Name)
+	return fmt.Sprintf(`<textarea name="%s" id="id_%s"></textarea>`, inp.Name, inp.Name)
 }
 
 func (inp *Textarea) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 
@@ -93,7 +94,7 @@ func (inp *Dropdown) Validate(r *http.Request) (bool) {
 }
 
 func (inp *Dropdown) Render() (string) {
-	out := fmt.Sprintf(`<select name="%s">`, inp.Name)
+	out := fmt.Sprintf(`<select name="%s" id="id_%s">`, inp.Name, inp.Name)
 	for _, opt := range inp.Options {
 		out += fmt.Sprintf(`<option>%s</option>`, opt)
 	}
@@ -102,7 +103,7 @@ func (inp *Dropdown) Render() (string) {
 }
 
 func (inp *Dropdown) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 
@@ -148,11 +149,12 @@ func (inp *Checkbox) Validate(r *http.Request) (bool) {
 }
 
 func (inp *Checkbox) Render() (string) {
-	return fmt.Sprintf(`<input type="checkbox" name="%s"/>`, inp.Name)
+	return fmt.Sprintf(`<input type="checkbox" name="%s" id="id_%s"/>`,
+		inp.Name, inp.Name)
 }
 
 func (inp *Checkbox) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 
@@ -213,11 +215,12 @@ func (inp *File) Validate(r *http.Request) (bool) {
 }
 
 func (inp *File) Render() (string) {
-	return fmt.Sprintf(`<input type="file" name="%s"/>`, inp.Name)
+	return fmt.Sprintf(`<input type="file" name="%s" id="id_%s"/>`,
+		inp.Name, inp.Name)
 }
 
 func (inp *File) GetLabel() (string) {
-	return inp.Label
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 

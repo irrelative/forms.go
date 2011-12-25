@@ -1,4 +1,4 @@
-package main
+package forms
 
 import (
 	"fmt"
@@ -49,7 +49,7 @@ func (inp *Password) Validate(r *http.Request) (bool) {
 }
 
 func (inp *Password) Render() (string) {
-	return fmt.Sprintf(`<input type="password" name="%s"/>`, inp.Name)
+	return fmt.Sprintf(`<input type="password" name="%s" id="id_%s"/>`, inp.Name, inp.Name)
 }
 
 func (inp *Password) GetLabel() (string) {

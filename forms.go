@@ -8,89 +8,62 @@ import (
 /* Inputs */
 
 type InputInterface interface {
-	Validate(*http.Request) (bool)
-	Render() (string)
-	GetLabel() (string)
+	Render() (string) // Render the input field
+	GetLabel() (string) // Render the label
+	GetValidators() ([]func (*http.Request) (bool))
+}
+
+type Input struct {
+	Name string
+	Label string
+	Errors []string
+	Validators []func (*http.Request) (bool)
+}
+
+func (inp *Input) Render() (string) {
+	return "Not implemented"
+}
+
+func (inp *Input) GetLabel() (string) {
+	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
+}
+
+func (inp *Input) GetValidators() ([]func (*http.Request) (bool)) {
+	return inp.Validators
 }
 
 // Text Input
 
-type Textbox struct {
-	Name string
-	Label string
-	Errors []string
-	// Validators list
-}
-
-func (inp *Textbox) Validate(r *http.Request) (bool) {
-	return true
-}
+type Textbox struct { Input }
 
 func (inp *Textbox) Render() (string) {
 	return fmt.Sprintf(`<input type="text" name="%s" id="id_%s"/>`,
 		inp.Name, inp.Name)
 }
 
-func (inp *Textbox) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
-}
-
 // Password Input
 
-type Password struct {
-	Name string
-	Label string
-	Errors []string
-	// Validators list
-}
-
-func (inp *Password) Validate(r *http.Request) (bool) {
-	return true
-}
+type Password struct { Input }
 
 func (inp *Password) Render() (string) {
 	return fmt.Sprintf(`<input type="password" name="%s" id="id_%s"/>`, inp.Name, inp.Name)
 }
 
-func (inp *Password) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
-}
-
 
 // Textarea Input
 
-type Textarea struct {
-	Name string
-	Label string
-	Errors []string
-	// Validators list
-}
-
-func (inp *Textarea) Validate(r *http.Request) (bool) {
-	return true
-}
+type Textarea struct { Input }
 
 func (inp *Textarea) Render() (string) {
 	return fmt.Sprintf(`<textarea name="%s" id="id_%s"></textarea>`, inp.Name, inp.Name)
-}
-
-func (inp *Textarea) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
 
 // Dropdown
 
 type Dropdown struct {
-	Name string
-	Label string
-	Errors []string
+	Input
 	Options []string
-	// Validators list
-}
-
-func (inp *Dropdown) Validate(r *http.Request) (bool) {
-	return true
 }
 
 func (inp *Dropdown) Render() (string) {
@@ -102,23 +75,12 @@ func (inp *Dropdown) Render() (string) {
 	return out
 }
 
-func (inp *Dropdown) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
-}
-
 
 // Radios
 
 type Radio struct {
-	Name string
-	Label string
-	Errors []string
+	Input
 	Options []string
-	// Validators list
-}
-
-func (inp *Radio) Validate(r *http.Request) (bool) {
-	return true
 }
 
 func (inp *Radio) Render() (string) {
@@ -138,14 +100,7 @@ func (inp *Radio) GetLabel() (string) {
 // Checkbox
 
 type Checkbox struct {
-	Name string
-	Label string
-	Errors []string
-	// Validators list
-}
-
-func (inp *Checkbox) Validate(r *http.Request) (bool) {
-	return true
+	Input
 }
 
 func (inp *Checkbox) Render() (string) {
@@ -153,21 +108,11 @@ func (inp *Checkbox) Render() (string) {
 		inp.Name, inp.Name)
 }
 
-func (inp *Checkbox) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
-}
-
 
 // Button
 
 type Button struct {
-	Name string
-	Label string
-	// Validators list
-}
-
-func (inp *Button) Validate(r *http.Request) (bool) {
-	return true
+	Input
 }
 
 func (inp *Button) Render() (string) {
@@ -183,13 +128,7 @@ func (inp *Button) GetLabel() (string) {
 // Hidden
 
 type Hidden struct {
-	Name string
-	Errors []string
-	// Validators list
-}
-
-func (inp *Hidden) Validate(r *http.Request) (bool) {
-	return true
+	Input
 }
 
 func (inp *Hidden) Render() (string) {
@@ -204,14 +143,7 @@ func (inp *Hidden) GetLabel() (string) {
 // File 
 
 type File struct {
-	Name string
-	Label string
-	Errors []string
-	// Validators list
-}
-
-func (inp *File) Validate(r *http.Request) (bool) {
-	return true
+	Input
 }
 
 func (inp *File) Render() (string) {
@@ -219,16 +151,12 @@ func (inp *File) Render() (string) {
 		inp.Name, inp.Name)
 }
 
-func (inp *File) GetLabel() (string) {
-	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
-}
-
 
 /* Form */
 
 type Form struct {
 	Inputs []InputInterface
-	Validators []func() (bool)
+	Validators []func(*http.Request) (bool)
 }
 
 func (frm *Form) Render() (string) {
@@ -248,18 +176,28 @@ func (frm *Form) AddInput(inp InputInterface) {
 	frm.Inputs = append(frm.Inputs, inp)
 }
 
+func (frm *Form) Validate(r *http.Request) (bool) {
+	valid := true
+	for _, inp := range frm.Inputs {
+		for _, validator := range inp.GetValidators() {
+			valid = validator(r) && valid
+		}
+	}
+	return valid
+}
+
 func main() {
 	frm := new(Form)
-	frm.AddInput(&Textbox{Name:"email", Label:"Email"})
-	frm.AddInput(&Password{Name:"password", Label:"Password"})
-	frm.AddInput(&Textarea{Name:"message", Label:"Message"})
-	frm.AddInput(&Dropdown{Name:"gender", Label:"Gender",
+	frm.AddInput(&Textbox{Input{Name:"email", Label:"Email"}})
+	frm.AddInput(&Password{Input{Name:"password", Label:"Password"}})
+	frm.AddInput(&Textarea{Input{Name:"message", Label:"Message"}})
+	frm.AddInput(&Dropdown{Input:Input{Name:"gender", Label:"Gender"},
 		Options:[]string{"Female", "Male"}})
-	frm.AddInput(&Radio{Name:"gender2", Label:"Gender",
+	frm.AddInput(&Radio{Input:Input{Name:"gender2", Label:"Gender"},
 		Options:[]string{"Female", "Male"}})
-	frm.AddInput(&Checkbox{Name:"optin", Label:"Send updates?"})
-	frm.AddInput(&Hidden{Name:"price"})
-	frm.AddInput(&File{Name:"icon", Label:"Image upload"})
-	frm.AddInput(&Button{Name:"send", Label:"Sign Up"})
+	frm.AddInput(&Checkbox{Input{Name:"optin", Label:"Send updates?"}})
+	frm.AddInput(&Hidden{Input{Name:"price"}})
+	frm.AddInput(&File{Input{Name:"icon", Label:"Image upload"}})
+	frm.AddInput(&Button{Input{Name:"send", Label:"Sign Up"}})
 	fmt.Println(frm.Render())
 }

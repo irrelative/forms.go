@@ -2,6 +2,7 @@ package main
 
 import (
     "fmt"
+	"regexp"
     "net/http"
 	"forms" // My own library!
 )
@@ -24,7 +25,8 @@ type Page struct {
 func (p *Page) getForm() *forms.Form {
 	frm := new(forms.Form)
 	email := &forms.Textbox{forms.Input{Name:"email", Label:"Email"}}
-	email.MakeRequired()
+	email.ValidateRequired()
+	email.ValidateMatchRegexp(regexp.MustCompile(".*@.*"))
 	frm.AddInput(email)
 	frm.AddInput(&forms.Password{forms.Input{Name:"password", Label:"Password"}})
 	frm.AddInput(&forms.Textarea{forms.Input{Name:"message", Label:"Message"}})

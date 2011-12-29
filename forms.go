@@ -2,6 +2,7 @@ package forms
 
 import (
 	"fmt"
+	"regexp"
 	"net/http"
 )
 
@@ -49,7 +50,7 @@ func (inp *Input) Validate(r *http.Request) (bool) {
 	return valid
 }
 
-func (inp *Input) MakeRequired() {
+func (inp *Input) ValidateRequired() {
 	inp.Validators = append(inp.Validators, func (inp *Input, r *http.Request) (bool) {
 		name := inp.Name
 		value, ok := r.Form[name]
@@ -60,7 +61,24 @@ func (inp *Input) MakeRequired() {
 			}
 		}
 		if !ret {
-			inp.Errors = append(inp.Errors, fmt.Sprintf("%s field is required", inp.Name))
+			inp.Errors = append(inp.Errors, fmt.Sprintf("%s field is required", inp.Label))
+		}
+		return ret
+	})
+}
+
+func (inp *Input) ValidateMatchRegexp(re *regexp.Regexp) {
+	inp.Validators = append(inp.Validators, func (inp *Input, r *http.Request) (bool) {
+		name := inp.Name
+		value, ok := r.Form[name]
+		ret := false
+		if ok {
+			if 0 != len(value) && re.Match([]byte(value[0])) {
+				ret = true
+			}
+		}
+		if !ret {
+			inp.Errors = append(inp.Errors, fmt.Sprintf("%s is not valid", inp.Label))
 		}
 		return ret
 	})

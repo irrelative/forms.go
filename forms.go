@@ -9,32 +9,51 @@ import (
 
 type InputInterface interface {
 	Render() (string) // Render the input field
+	RenderErrors() (string) // Render the errors
 	GetLabel() (string) // Render the label
-	GetValidators() ([]func (*http.Request) (bool))
+	Validate(*http.Request) (bool) // Validate the input
 }
 
 type Input struct {
 	Name string
 	Label string
 	Errors []string
-	Validators []func (*http.Request) (bool)
+	Validators []func (*Input, *http.Request) (bool)
 }
 
 func (inp *Input) Render() (string) {
 	return "Not implemented"
 }
 
+func (inp *Input) RenderErrors() (string) {
+	out := ""
+	if len(inp.Errors) != 0 {
+		out += "<ul class=\"error_list\">"
+		for _, errstr := range inp.Errors {
+			out += fmt.Sprintf(`<li>%s</li>`, errstr)
+		}
+		out += "</ul>"
+	}
+	return out
+}
+
 func (inp *Input) GetLabel() (string) {
 	return fmt.Sprintf(`<label for="id_%s">%s</label>`, inp.Name, inp.Label)
 }
 
-func (inp *Input) GetValidators() ([]func (*http.Request) (bool)) {
-	return inp.Validators
+func (inp *Input) Validate(r *http.Request) (bool) {
+	valid := true
+	for _, validator := range inp.Validators {
+		valid = validator(inp, r) && valid
+	}
+	return valid
 }
 
 // Text Input
 
-type Textbox struct { Input }
+type Textbox struct {
+	Input
+}
 
 func (inp *Textbox) Render() (string) {
 	return fmt.Sprintf(`<input type="text" name="%s" id="id_%s"/>`,
@@ -160,15 +179,15 @@ type Form struct {
 }
 
 func (frm *Form) Render() (string) {
-	out := "<table>"
+	out := "\n<table>"
 	for _, inp := range frm.Inputs {
 		out += fmt.Sprintf(`
-		<tr>
-			<th>%s</th>
-			<td>%s</td>
-		</tr>`, inp.GetLabel(), inp.Render())
+        <tr>
+            <th>%s</th>
+            <td>%s%s</td>
+        </tr>`, inp.GetLabel(), inp.RenderErrors(), inp.Render())
 	}
-	out += "\n</table>"
+	out += "\n</table>\n"
 	return out
 }
 
@@ -179,9 +198,7 @@ func (frm *Form) AddInput(inp InputInterface) {
 func (frm *Form) Validate(r *http.Request) (bool) {
 	valid := true
 	for _, inp := range frm.Inputs {
-		for _, validator := range inp.GetValidators() {
-			valid = validator(r) && valid
-		}
+		valid = inp.Validate(r) && valid
 	}
 	return valid
 }

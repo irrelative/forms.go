@@ -23,7 +23,13 @@ type Page struct {
 
 func (p *Page) getForm() *forms.Form {
 	frm := new(forms.Form)
-	frm.AddInput(&forms.Textbox{forms.Input{Name:"email", Label:"Email"}})
+	email_valid := func (inp *forms.Input, r *http.Request) (bool) {
+		inp.Errors = append(inp.Errors, "Invalid email")
+		return false
+	}
+	email := &forms.Textbox{forms.Input{Name:"email", Label:"Email",
+		Validators: []func (*forms.Input, *http.Request) (bool){email_valid}}}
+	frm.AddInput(email)
 	frm.AddInput(&forms.Password{forms.Input{Name:"password", Label:"Password"}})
 	frm.AddInput(&forms.Textarea{forms.Input{Name:"message", Label:"Message"}})
 	frm.AddInput(&forms.Dropdown{Input: forms.Input{Name:"gender", Label:"Gender"},
@@ -45,8 +51,13 @@ func (p *Page) GET() {
 
 func (p *Page) POST() {
 	_ = p.request.ParseForm() // XXX handle error
+	frm := p.getForm()
+	if !frm.Validate(p.request) {
+		html := fmt.Sprintf(`<form action="" method="post">%s</form>`, frm.Render())
+		fmt.Fprintf(p.response, html)
+		return
+	}
     fmt.Fprintf(p.response, "<h1>Bingo!</h1><dl>")
-	fmt.Println(p.request.Form)
 	for k, v := range p.request.Form {
 		fmt.Fprintf(p.response, "<dt>%s</dt><dd>%s</dd>", k, v)
 	}

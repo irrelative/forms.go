@@ -51,9 +51,7 @@ func (inp *Input) Validate(r *http.Request) (bool) {
 
 // Text Input
 
-type Textbox struct {
-	Input
-}
+type Textbox struct { Input }
 
 func (inp *Textbox) Render() (string) {
 	return fmt.Sprintf(`<input type="text" name="%s" id="id_%s"/>`,
@@ -118,9 +116,7 @@ func (inp *Radio) GetLabel() (string) {
 
 // Checkbox
 
-type Checkbox struct {
-	Input
-}
+type Checkbox struct { Input }
 
 func (inp *Checkbox) Render() (string) {
 	return fmt.Sprintf(`<input type="checkbox" name="%s" id="id_%s"/>`,
@@ -130,9 +126,7 @@ func (inp *Checkbox) Render() (string) {
 
 // Button
 
-type Button struct {
-	Input
-}
+type Button struct { Input }
 
 func (inp *Button) Render() (string) {
 	return fmt.Sprintf(`<button name="%s" type="submit">%s</button>`,
@@ -146,9 +140,7 @@ func (inp *Button) GetLabel() (string) {
 
 // Hidden
 
-type Hidden struct {
-	Input
-}
+type Hidden struct { Input }
 
 func (inp *Hidden) Render() (string) {
 	return fmt.Sprintf(`<input type="hidden" name="%s"/>`, inp.Name)
@@ -161,9 +153,7 @@ func (inp *Hidden) GetLabel() (string) {
 
 // File 
 
-type File struct {
-	Input
-}
+type File struct { Input }
 
 func (inp *File) Render() (string) {
 	return fmt.Sprintf(`<input type="file" name="%s" id="id_%s"/>`,

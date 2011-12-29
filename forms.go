@@ -49,6 +49,24 @@ func (inp *Input) Validate(r *http.Request) (bool) {
 	return valid
 }
 
+func (inp *Input) MakeRequired() {
+	inp.Validators = append(inp.Validators, func (inp *Input, r *http.Request) (bool) {
+		name := inp.Name
+		value, ok := r.Form[name]
+		ret := false
+		if ok {
+			if 0 != len(value) && 0 != len(value[0]) {
+				ret = true
+			}
+		}
+		if !ret {
+			inp.Errors = append(inp.Errors, fmt.Sprintf("%s field is required", inp.Name))
+		}
+		return ret
+	})
+}
+
+
 // Text Input
 
 type Textbox struct { Input }
@@ -159,6 +177,11 @@ func (inp *File) Render() (string) {
 	return fmt.Sprintf(`<input type="file" name="%s" id="id_%s"/>`,
 		inp.Name, inp.Name)
 }
+
+
+/* Validators */
+
+type Validator func (inp *Input, r *http.Request) (bool)
 
 
 /* Form */

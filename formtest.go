@@ -23,12 +23,8 @@ type Page struct {
 
 func (p *Page) getForm() *forms.Form {
 	frm := new(forms.Form)
-	email_valid := func (inp *forms.Input, r *http.Request) (bool) {
-		inp.Errors = append(inp.Errors, "Invalid email")
-		return false
-	}
-	email := &forms.Textbox{forms.Input{Name:"email", Label:"Email",
-		Validators: []func (*forms.Input, *http.Request) (bool){email_valid}}}
+	email := &forms.Textbox{forms.Input{Name:"email", Label:"Email"}}
+	email.MakeRequired()
 	frm.AddInput(email)
 	frm.AddInput(&forms.Password{forms.Input{Name:"password", Label:"Password"}})
 	frm.AddInput(&forms.Textarea{forms.Input{Name:"message", Label:"Message"}})
